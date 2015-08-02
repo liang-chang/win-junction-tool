@@ -46,8 +46,7 @@ def loadConfig():
             CONFIG[key]=secion[key] in ['true', 'True']
         else:
             CONFIG[key]=(varType)(secion[key])
-    
-    config.remove_option(CONFIG_SECION_NAME)
+#     config.remove_option(CONFIG_SECION_NAME)
 #     sections = list(filter(lambda s: s.startswith(CONFIG_SECION_NAME) == False, config.sections()))
     return config
             
