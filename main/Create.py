@@ -10,10 +10,15 @@ FILE_CONFIGS.remove_section(junction.CONFIG_SECION_NAME)
 
 CONFIG = junction.CONFIG
 
+totalCount=0;
 successCount=0;       
 failCount=0;
-sections=FILE_CONFIGS
+sectionCount=0;
+skipCount=0;
+
+sections=FILE_CONFIGS.sections()
 for target in sections:
+    sectionCount+=1;
     if(os.path.isdir(target) == False):
         print("dir: " + target + " is invalid!")
         continue
@@ -25,16 +30,19 @@ for target in sections:
         
         # 处理路径最后面出现路径分隔符的问题
         path = os.path.realpath(path)
+        
+        totalCount+=1;
          
         # 创建文件夹备份文件    
         if(CONFIG['renameOriginFolder']==True and not os.path.exists(path + CONFIG['renameFolderSubfix'])):
             os.makedirs(path + CONFIG['renameFolderSubfix'])
          
-        # 删除源文件夹
+        # 如果存在源文件，删除源文件夹
         if(os.path.exists(path) == True):
             # 是否已经指向指定文件夹
             if(junction.isFolderJunctionTo(path, os.path.realpath(target)) == True):
                 print(path + " has linked to target , skip ")
+                skipCount+=1
                 continue
              
             # 源文件夹深度判断， 避免删除 根目录
@@ -58,6 +66,8 @@ for target in sections:
             print(path+" create success!")
         else:
             print(path+" create failed!")
-#         
+print()
+print('Section:{sectionCount}'.format(sectionCount=sectionCount))
+print('Total:{totalCount}, Success:{successCount}, Fail:{failCount}, Skip:{skipCount}'.format(totalCount=totalCount,successCount=successCount,failCount=failCount,skipCount=skipCount))
 # # http://stackoverflow.com/questions/4760215/running-shell-command-from-python-and-capturing-the-output        
 # https://docs.python.org/3/library/subprocess.html
