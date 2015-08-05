@@ -25,8 +25,8 @@ CONFIG = {
 # 清空原始文件夹
 'clearOriginFolder' : True,
 
-# 创建 junction 文件夹时
-'createParentDirectory':True,
+#当目录文件夹无效时，跳过
+'skipInvalidTarget':False,
 
 # 源文件从根目录开始最小深度要求
 'minDirDeepth':2

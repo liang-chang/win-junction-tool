@@ -16,23 +16,37 @@ failCount=0;
 sectionCount=0;
 skipCount=0;
 
+
+print("Create start ……")
+
 sections=FILE_CONFIGS.sections()
+
 for target in sections:
+    print()
+    
     sectionCount+=1;
+    
+    part = FILE_CONFIGS[target]
+    
+    size=len(part)
+    totalCount+=size;
+        
     if(os.path.isdir(target) == False):
         print("dir: " + target + " is invalid!")
-        continue
-    print("\n")
+        if(CONFIG['skipInvalidTarget']==True):
+            print('{size}:Failed'.format(size=size))
+            failCount+=size
+            continue
+        else:
+            exit()
     print("Target:" + os.path.realpath(target))
-    part = FILE_CONFIGS[target]
+    
     for key in part:        
         path = part[key]
         
         # 处理路径最后面出现路径分隔符的问题
         path = os.path.realpath(path)
-        
-        totalCount+=1;
-         
+                 
         # 创建文件夹备份文件    
         if(CONFIG['renameOriginFolder']==True and not os.path.exists(path + CONFIG['renameFolderSubfix'])):
             os.makedirs(path + CONFIG['renameFolderSubfix'])
@@ -67,6 +81,7 @@ for target in sections:
         else:
             print(path+" create failed!")
 print()
+print("Create result :")
 print('Section:{sectionCount}'.format(sectionCount=sectionCount))
 print('Total:{totalCount}, Success:{successCount}, Fail:{failCount}, Skip:{skipCount}'.format(totalCount=totalCount,successCount=successCount,failCount=failCount,skipCount=skipCount))
 # # http://stackoverflow.com/questions/4760215/running-shell-command-from-python-and-capturing-the-output        
