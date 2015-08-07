@@ -3,17 +3,19 @@ Created on 2015-7-19
 
 @author: ZL
 '''
-#import shlex
-#import configparser
 import os
 import shutil
 import subprocess
 import configparser
+import sys
+import tempfile
 
 # 配置文件名名称
 CONFIG_FILE_NAME = 'config.ini'
 
-CONFIG_SECION_NAME='config'
+CONFIG_SECION_NAME = 'config'
+
+PATH_ALIAS_SECION_NAME = 'pathAlias'
 
 CONFIG = {
 # 原始文件夹重命名备份
@@ -22,34 +24,58 @@ CONFIG = {
 # 原始文件夹重命名后缀
 'renameFolderSubfix' : '_bak',
 
-# 清空原始文件夹
-'clearOriginFolder' : True,
+# 清空原始文件夹,只有当  renameOriginFolder 为 True 时该配置才会生效
+'clearOriginFolder' : False,
 
-#当目录文件夹无效时，跳过
+# 当目录文件夹无效时，跳过
 'skipInvalidTarget':False,
 
 # 源文件从根目录开始最小深度要求
 'minDirDeepth':2
 }
 
+#文件夹别名
+PATH_ALIAS = {
+    'UserHome':os.path.expanduser("~"),
+    'Temp':tempfile.gettempdir()   
+}
+
+
 def loadConfig():
     currDir = os.path.dirname(os.path.abspath(__file__))
-    configFilePath=currDir + os.path.sep + CONFIG_FILE_NAME;
+    configFilePath = currDir + os.path.sep + CONFIG_FILE_NAME;
     config = configparser.ConfigParser()
-    config.read(configFilePath,"UTF-8")
-    secion=config[CONFIG_SECION_NAME]    
-    for key in CONFIG: 
-        varType=type(CONFIG[key])
-        if(key not in secion):
-            continue
-        if(varType==bool):
-            CONFIG[key]=secion[key] in ['true', 'True']
-        else:
-            CONFIG[key]=(varType)(secion[key])
-#     config.remove_option(CONFIG_SECION_NAME)
+    config.read(configFilePath, "UTF-8")
+    parsePathAlias(PATH_ALIAS, config[PATH_ALIAS_SECION_NAME])
+    parseConfigSection(CONFIG, config[CONFIG_SECION_NAME])
+    #重新构造 变量替换
+    return parseTargetSection(config);
 #     sections = list(filter(lambda s: s.startswith(CONFIG_SECION_NAME) == False, config.sections()))
-    return config
-            
+
+def parseTargetSection(old):
+    new = configparser.RawConfigParser()
+    sections=old.sections()
+    for skey in sections:
+        newSkeyName=dictStrFormat(skey,PATH_ALIAS)
+        new.add_section(newSkeyName)
+        for key in old[skey]:
+            new.set(newSkeyName, key, dictStrFormat(old[skey][key],PATH_ALIAS))                
+    return new;
+
+def parseConfigSection(dictMap, section):
+    for key in dictMap:        
+        varType = type(dictMap[key])
+        if(key not in section):
+            continue
+        if(varType == bool):
+            dictMap[key] = section[key] in ['true', 'True']
+        else:
+            dictMap[key] = (varType)(section[key])
+
+def parsePathAlias(dictMap, section):
+    for key in section: 
+        dictMap[key] = dictStrFormat(section[key],dictMap)
+                        
 def getFolderDeepth(path):
     path = os.path.abspath(path).lower();                         
     parentDir = os.path.abspath(os.path.join(path, os.pardir)).lower()
@@ -78,10 +104,10 @@ def isFolderJunctionTo(source, target):
    
 def createJunction(source, target):
     path = os.path.abspath(source)
-    ret=subprocess.Popen(["junction", path,target],stdout=subprocess.PIPE)
+    ret = subprocess.Popen(["junction", path, target], stdout=subprocess.PIPE)
     ret.wait()
     if(ret.returncode != 0):
-        out=ret.stdout
+        out = ret.stdout
         print(out)
     # 创建成功 返回 0
     # 否则 返回  非零
@@ -98,6 +124,7 @@ def isJunction(source):
     return size > 8
 
 
+
 def delJunction(source):     
     path = os.path.abspath(source)
     output = os.popen('junction -d ' + path)
@@ -108,8 +135,8 @@ def delJunction(source):
 
 def delDir(path):
     path = os.path.abspath(path)
-    if(os.path.isdir(path)==False):
-        print(path+" is not a fonder!")
+    if(os.path.isdir(path) == False):
+        print(path + " is not a fonder!")
         return False;
     try:
         shutil.rmtree(path)
@@ -117,3 +144,24 @@ def delDir(path):
     except Exception as err:
         print(err)
         return False
+
+def clearDirectory(path):
+    for the_file in os.listdir(path):
+        file_path = os.path.join(path, the_file)
+        if(os.path.isfile(file_path)):
+            os.unlink(file_path)
+        elif(os.path.isdir(file_path)):
+            shutil.rmtree(file_path)
+            
+
+def varStrFormat(text):
+    return text.format_map(safesub(sys._getframe(1).f_locals))
+
+def dictStrFormat(text, dictMap):
+    return text.format_map(safesub(dictMap))
+            
+class safesub(dict):
+    """防止key找不到"""
+    def __missing__(self, key):
+        return '{' + key + '}'
+

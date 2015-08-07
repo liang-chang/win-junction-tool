@@ -1,88 +1,94 @@
 # coding=utf-8
 import junction
 import os
+import shutil 
 
- 
 FILE_CONFIGS = junction.loadConfig()
-
-#删去 配置项  config section
+# 删去 配置项  config section
 FILE_CONFIGS.remove_section(junction.CONFIG_SECION_NAME)
+FILE_CONFIGS.remove_section(junction.PATH_ALIAS_SECION_NAME)
 
 CONFIG = junction.CONFIG
+PATH_ALIAS = junction.PATH_ALIAS;
 
-totalCount=0;
-successCount=0;       
-failCount=0;
-sectionCount=0;
-skipCount=0;
-
+report = {
+'totalCount' : 0,
+'successCount' : 0,
+'failCount' : 0,
+'sectionCount' : 0,
+'renameSkip':0
+}
 
 print("Create start ……")
 
-sections=FILE_CONFIGS.sections()
+print(CONFIG)
+
+sections = FILE_CONFIGS.sections()
+
+sectionIndex = 0;
 
 for target in sections:
     print()
     
-    sectionCount+=1;
     
-    part = FILE_CONFIGS[target]
+    print("Target index:" + str(sectionIndex))
+    sectionIndex += 1
     
-    size=len(part)
-    totalCount+=size;
+    report['sectionCount'] += 1;
+        
+    section = FILE_CONFIGS[target]
+    
+    target = os.path.realpath(target)
+    
+    size = len(section)
+    report['totalCount'] += size;
         
     if(os.path.isdir(target) == False):
         print("dir: " + target + " is invalid!")
-        if(CONFIG['skipInvalidTarget']==True):
-            print('{size}:Failed'.format(size=size))
-            failCount+=size
+        if(CONFIG['skipInvalidTarget'] == True):
+            print('{size} create junction Failed !!'.format(size=size))
+            report['failCount'] += size
             continue
         else:
+            print('\nTarget dir :\n {target} \nis not directory or not exist !'.format(target=target))
             exit()
-    print("Target:" + os.path.realpath(target))
+    print("Target:" + target)
     
-    for key in part:        
-        path = part[key]
-        
+    for key in section:        
+        path = section[key]
+                
         # 处理路径最后面出现路径分隔符的问题
         path = os.path.realpath(path)
-                 
-        # 创建文件夹备份文件    
-        if(CONFIG['renameOriginFolder']==True and not os.path.exists(path + CONFIG['renameFolderSubfix'])):
-            os.makedirs(path + CONFIG['renameFolderSubfix'])
-         
-        # 如果存在源文件，删除源文件夹
-        if(os.path.exists(path) == True):
-            # 是否已经指向指定文件夹
-            if(junction.isFolderJunctionTo(path, os.path.realpath(target)) == True):
-                print(path + " has linked to target , skip ")
-                skipCount+=1
-                continue
-             
-            # 源文件夹深度判断， 避免删除 根目录
-            if(CONFIG['clearOriginFolder']==True and junction.getFolderDeepth(path) >= 2):
-                if(junction.isJunction(path)==True):
-                    #是符号链接
-                    if(junction.delJunction(path)==True):
-                        successCount+=1
-                    else:
-                        failCount+=1;
-                else:
-                    #普通文件夹 
-                    if(junction.delDir(path)==True):
-                        successCount+=1
-                    else:
-                        failCount+=1;
-                 
-        #创建 junction 
+        
+        # 创建文件夹备份文件
+        if(CONFIG['renameOriginFolder'] == True and os.path.exists(path)):
+            origin = path + CONFIG['renameFolderSubfix']
+            if(os.path.exists(origin)):
+                print("{origin}  has existed , skip rename".format(origin=origin))
+                report['renameSkip'] += 1
+            else:
+                os.rename(path, origin);
+                # 源文件夹深度判断， 避免删除 根目录
+                if(CONFIG['clearOriginFolder'] == True and junction.getFolderDeepth(origin) >= CONFIG['minDirDeepth']):                
+                    junction.clearDirectory(origin)
+                
+        if(os.path.exists(path)):
+            if(junction.isJunction(path) == True):
+                junction.delJunction(path)
+            else:
+                shutil.rmtree(path, True)
+                              
+        # 创建 junction 
         ret = junction.createJunction(path, target)
-        if(ret==True):
-            print(path+" create success!")
+        if(ret == True):
+            report['successCount'] += 1
+            print(path + " create junction success!")
         else:
-            print(path+" create failed!")
+            report['failCount'] += 1
+            print(path + " create junction failed!")
 print()
 print("Create result :")
-print('Section:{sectionCount}'.format(sectionCount=sectionCount))
-print('Total:{totalCount}, Success:{successCount}, Fail:{failCount}, Skip:{skipCount}'.format(totalCount=totalCount,successCount=successCount,failCount=failCount,skipCount=skipCount))
+print('Section:{sectionCount}'.format_map(report))
+print('Total:{totalCount}, Success:{successCount}, Fail:{failCount},Rename skip:{renameSkip}'.format_map(report))
 # # http://stackoverflow.com/questions/4760215/running-shell-command-from-python-and-capturing-the-output        
 # https://docs.python.org/3/library/subprocess.html
