@@ -51,7 +51,8 @@ for target in sections:
             continue
         else:
             print('\nTarget dir :\n {target} \nis not directory or not exist !'.format(target=target))
-            exit()
+            print('\nCreate terminated!')
+            break
     print("Target:" + target)
     
     for key in section:        
@@ -62,16 +63,16 @@ for target in sections:
         
         # 创建文件夹备份文件
         if(CONFIG['renameOriginFolder'] == True and os.path.exists(path)):
-            origin = path + CONFIG['renameFolderSubfix']
-            if(os.path.exists(origin)):
-                print("{origin}  has existed , skip rename".format(origin=origin))
+            rename = path + CONFIG['renameFolderSubfix']
+            if(os.path.exists(rename)):
+                print("{rename}  has existed , skip rename".format(rename=rename))
                 report['renameSkip'] += 1
             else:
-                os.rename(path, origin);
+                os.rename(path, rename);
                 # 源文件夹深度判断， 避免删除 根目录
-                if(CONFIG['clearOriginFolder'] == True and junction.getFolderDeepth(origin) >= CONFIG['minDirDeepth']):                
-                    junction.clearDirectory(origin)
-                
+                if(CONFIG['clearOriginFolder'] == True and junction.getFolderDeepth(rename) >= CONFIG['minDirDeepth']):                
+                    junction.clearDirectory(rename)
+        #不需要备份时，删除源文件夹
         if(os.path.exists(path)):
             if(junction.isJunction(path) == True):
                 junction.delJunction(path)
