@@ -5,7 +5,6 @@ Created on 2015-7-19
 '''
 import os
 import shutil
-import subprocess
 import configparser
 import sys
 import tempfile
@@ -88,49 +87,47 @@ def getFolderDeepth(path):
     return deepth
 
 
-def isFolderJunctionTo(source, target):
-    path = os.path.abspath(source)
-    output = os.popen('junction ' + path)
+def isFolderJunctionTo(path, target):
+    path = os.path.abspath(path)
+    target = os.path.abspath(target)    
+    output = os.popen(r'junction "{path}"'.format(path=path))
     out = output.readlines();
-    size = len(out)
+    
+    filter(lambda s: s.startswith("") == False, out)
+    
     # 如果是 junction 点的话，返回 9行
     # 否则是 7 行
-    if(size < 8):
-        return False
+#     if(size!=9):
+#         return False
     parseTarget = os.path.abspath(out[6].strip()[17:].strip().lower())
     target = os.path.abspath(target).lower();    
     return parseTarget == target
 
-   
-def createJunction(source, target):
-    path = os.path.abspath(source)
-    ret = subprocess.Popen(["junction", path, target], stdout=subprocess.PIPE)
-    ret.wait()
-    if(ret.returncode != 0):
-        out = ret.stdout
-        print(out)
-    # 创建成功 返回 0
-    # 否则 返回  非零
-    return ret.returncode == 0
-
-
-def isJunction(source):
-    path = os.path.abspath(source)
-    output = os.popen('junction ' + path)
-    out = output.readlines();    
-    size = len(out)    
-    # 如果是 junction 点的话，返回 9行
+def isJunction(path):
+    path = os.path.abspath(path)
+    output = os.popen(r'junction "{path}"'.format(path=path))
+    out = output.readlines()
+    size = len(out)
+    # 如果是 junction 点的话，返回9行
     # 否则是 7 行
-    return size > 8
-
-
+    return size ==9
+   
+def createJunction(path, target):
+    path = os.path.abspath(path)
+    target=os.path.abspath(target)    
+    output = os.popen(r'junction "{path}" "{target}"'.format(path=path,target=target))
+    out = output.readlines()
+    size = len(out)
+    #成功时7行
+    #错误时9行
+    return size==7
 
 def delJunction(source):     
-    path = os.path.abspath(source)
-    output = os.popen('junction -d ' + path)
+    path = os.path.abspath(source)    
+    output = os.popen(r'junction -d "{path}"'.format(path=path))
     out = output.readlines();
-    # 错误8行
-    # 正确6行    
+    # 错误时8行
+    # 正确时6行    
     return len(out) < 8
 
 def delDir(path):
@@ -164,4 +161,4 @@ class safesub(dict):
     """防止key找不到"""
     def __missing__(self, key):
         return '{' + key + '}'
-
+    
