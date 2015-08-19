@@ -9,6 +9,7 @@ import configparser
 import sys
 import tempfile
 import ctypes
+import re
 
 
 def isFolderJunctionTo(path, target):
@@ -29,15 +30,26 @@ def isFolderJunctionTo(path, target):
 
 def isJunction(path):
     path = os.path.abspath(path)
+    path=path.replace("\\", "/")
     output = os.popen(r'junction "{path}"'.format(path=path))
     out = output.readlines()
     #sections = list(filter(lambda s: s.startswith(CONFIG_SECION_NAME) == False, config.sections()))
+    pattern = re.compile(path+':\s+?(\w+)')
     #sections = list(filter(lambda s: s.startswith(CONFIG_SECION_NAME) == False, config.sections()))
-
-    print(out)
-    size = len(out)
+    find=False
+    for s in out:
+        print(s)
+        s=s.replace("\\", "/")
+        ret=pattern.match(s)
+        if(ret):
+            if(ret.group(1)=="JUNCTION"):
+                pattern = re.compile("Substitute\s+?Name:\s+\(\w+)")
+#         result = re.match(, s)
+    
+    return False,""
     # 如果是 junction 点的话，返回9行
     # 否则是 7 行    
-    return size ==9
 
 print(isJunction("v:/tt"))
+                
+
