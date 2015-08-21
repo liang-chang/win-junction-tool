@@ -8,6 +8,7 @@ import shutil
 import configparser
 import sys
 import tempfile
+import re
 
 # 配置文件名名称
 CONFIG_FILE_NAME = 'config.ini'
@@ -21,7 +22,7 @@ CONFIG = {
 'renameOriginFolder' : True,
 
 # 原始文件夹重命名后缀
-'renameFolderSubfix' : '_bak',
+'renameFolderSubfix' : '_link_bak',
 
 # 清空原始文件夹,只有当  renameOriginFolder 为 True 时该配置才会生效
 'clearOriginFolder' : False,
@@ -89,28 +90,35 @@ def getFolderDeepth(path):
 
 def isFolderJunctionTo(path, target):
     path = os.path.abspath(path)
-    target = os.path.abspath(target)    
-    output = os.popen(r'junction "{path}"'.format(path=path))
-    out = output.readlines();
-    
-    filter(lambda s: s.startswith("") == False, out)
-    
-    # 如果是 junction 点的话，返回 9行
-    # 否则是 7 行
-#     if(size!=9):
-#         return False
-    parseTarget = os.path.abspath(out[6].strip()[17:].strip().lower())
-    target = os.path.abspath(target).lower();    
-    return parseTarget == target
+    target = os.path.abspath(target).lower()    
+    result, p = isJunction(path)
+    if(result==True):
+        p=os.path.abspath(p).lower()
+        if(p==target):
+            return True
+    return False
 
 def isJunction(path):
-    path = os.path.abspath(path)
-    output = os.popen(r'junction "{path}"'.format(path=path))
-    out = output.readlines()
-    size = len(out)
-    # 如果是 junction 点的话，返回9行
-    # 否则是 7 行
-    return size ==9
+    path = os.path.abspath(path).replace("\\", "/")
+    output = os.popen(r'junction "{path}"'.format(path=path)).readlines()
+    pattern = re.compile(path + ':\s+?JUNCTION')
+    outLen = len(output)
+    nextStart = 0;
+    for i in range(outLen):
+        s = output[i].replace("\\", "/")
+        ret = pattern.match(s)
+        if(ret):
+            nextStart = i + 1
+            break    
+    if(i + 1 == outLen):
+        return (False, "")
+    while nextStart <= outLen:
+        s = output[nextStart].strip();
+        nextStart+=1
+        if(s.startswith("Substitute Name:") == True):
+            s = s[len("Substitute Name:"):]
+            break
+    return (True, s.strip())
    
 def createJunction(path, target):
     path = os.path.abspath(path)
@@ -118,17 +126,27 @@ def createJunction(path, target):
     output = os.popen(r'junction "{path}" "{target}"'.format(path=path,target=target))
     out = output.readlines()
     size = len(out)
-    #成功时7行
-    #错误时9行
-    return size==7
+    path=path.replace("\\", "/")
+    pattern = re.compile("Created:\s+?"+path)
+    for i in range(size):
+        s = out[i].replace("\\", "/")
+        ret = pattern.match(s)
+        if(ret):
+            return True
+    return False
 
 def delJunction(source):     
     path = os.path.abspath(source)    
     output = os.popen(r'junction -d "{path}"'.format(path=path))
-    out = output.readlines();
-    # 错误时8行
-    # 正确时6行    
-    return len(out) < 8
+    out = output.readlines()
+    path=path.replace("\\", "/")
+    pattern = re.compile("Deleted\s+?"+path)
+    for s in out:
+        s = s.replace("\\", "/")
+        ret = pattern.match(s)
+        if(ret):
+            return True
+    return False
 
 def delDir(path):
     path = os.path.abspath(path)

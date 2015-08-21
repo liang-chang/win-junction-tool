@@ -15,41 +15,68 @@ import re
 def isFolderJunctionTo(path, target):
     path = os.path.abspath(path)
     target = os.path.abspath(target)    
-    output = os.popen(r'junction "{path}"'.format(path=path))
-    out = output.readlines();
-    
-    filter(lambda s: s.startswith("") == False, out)
-    
-    # 如果是 junction 点的话，返回 9行
-    # 否则是 7 行
-#     if(size!=9):
-#         return False
-    parseTarget = os.path.abspath(out[6].strip()[17:].strip().lower())
-    target = os.path.abspath(target).lower();    
-    return parseTarget == target
+    result, p = isJunction(path)
+    if(result==True):
+        p=os.path.abspath(p).lower()
+        if(p==target):
+            return True
+    return False
+ 
 
 def isJunction(path):
-    path = os.path.abspath(path)
-    path=path.replace("\\", "/")
-    output = os.popen(r'junction "{path}"'.format(path=path))
-    out = output.readlines()
-    #sections = list(filter(lambda s: s.startswith(CONFIG_SECION_NAME) == False, config.sections()))
-    pattern = re.compile(path+':\s+?(\w+)')
-    #sections = list(filter(lambda s: s.startswith(CONFIG_SECION_NAME) == False, config.sections()))
-    find=False
-    for s in out:
-        print(s)
-        s=s.replace("\\", "/")
-        ret=pattern.match(s)
+    path = os.path.abspath(path).replace("\\", "/")
+    output = os.popen(r'junction "{path}"'.format(path=path)).readlines()
+    pattern = re.compile(path + ':\s+?JUNCTION')
+    outLen = len(output)
+    nextStart = 0;
+    for i in range(outLen):
+        s = output[i].replace("\\", "/")
+        ret = pattern.match(s)
         if(ret):
-            if(ret.group(1)=="JUNCTION"):
-                pattern = re.compile("Substitute\s+?Name:\s+\(\w+)")
-#         result = re.match(, s)
-    
-    return False,""
-    # 如果是 junction 点的话，返回9行
-    # 否则是 7 行    
+            nextStart = i + 1
+            break    
+    if(i + 1 == outLen):
+        return (False, "")
+    while nextStart <= outLen:
+        s = output[nextStart].strip();
+        nextStart+=1
+        if(s.startswith("Substitute Name:") == True):
+            s = s[len("Substitute Name:"):]
+            break
+    return (True, s.strip())
 
-print(isJunction("v:/tt"))
+def createJunction(path, target):
+    path = os.path.abspath(path)
+    target=os.path.abspath(target)    
+    output = os.popen(r'junction "{path}" "{target}"'.format(path=path,target=target))
+    out = output.readlines()
+    size = len(out)
+    path=path.replace("\\", "/")
+    pattern = re.compile("Created:\s+?"+path)
+    for i in range(size):
+        s = out[i].replace("\\", "/")
+        ret = pattern.match(s)
+        if(ret):
+            return True
+    return False
+
+def delJunction(source):     
+    path = os.path.abspath(source)    
+    output = os.popen(r'junction -d "{path}"'.format(path=path))
+    out = output.readlines()
+    path=path.replace("\\", "/")
+    pattern = re.compile("Deleted\s+?"+path)
+    for s in out:
+        s = s.replace("\\", "/")
+        ret = pattern.match(s)
+        if(ret):
+            return True
+    return False
+    
+#print(createJunction(r"v:\tt", r"v:\temp"))
+print(delJunction(r"v:\tt"))
+
+# print(isJunction(r"C:\useless\A"))
+# print(isFolderJunctionTo(r"v:\tt",r"v:\temp"))
                 
 

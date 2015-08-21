@@ -16,6 +16,7 @@ report = {
 'successCount' : 0,
 'failCount' : 0,
 'sectionCount' : 0,
+'rename':0,
 'renameSkip':0
 }
 
@@ -27,15 +28,16 @@ sections = FILE_CONFIGS.sections()
 
 sectionIndex = 0;
 
+processBreak=False
+
+report['sectionCount'] = len(sections);
+
 for target in sections:
-    print()
-    
-    
-    print("Target index:" + str(sectionIndex))
     sectionIndex += 1
-    
-    report['sectionCount'] += 1;
+    print()
         
+    print("Target index:" + str(sectionIndex))
+            
     section = FILE_CONFIGS[target]
     
     target = os.path.realpath(target)
@@ -52,6 +54,7 @@ for target in sections:
         else:
             print('\nTarget dir :\n {target} \nis not directory or not exist !'.format(target=target))
             print('\nCreate terminated!')
+            processBreak=True
             break
     print("Target:" + target)
     
@@ -68,13 +71,15 @@ for target in sections:
                 print("{rename}  has existed , skip rename".format(rename=rename))
                 report['renameSkip'] += 1
             else:
-                os.rename(path, rename);
+                os.rename(path, rename)
+                report['rename']+=1
                 # 源文件夹深度判断， 避免删除 根目录
                 if(CONFIG['clearOriginFolder'] == True and junction.getFolderDeepth(rename) >= CONFIG['minDirDeepth']):                
                     junction.clearDirectory(rename)
         #不需要备份时，删除源文件夹
         if(os.path.exists(path)):
-            if(junction.isJunction(path) == True):
+            result,d=junction.isJunction(path)
+            if(result == True):
                 junction.delJunction(path)
             else:
                 shutil.rmtree(path, True)
@@ -89,7 +94,10 @@ for target in sections:
             print(path + " create junction failed!")
 print()
 print("Create result :")
-print('Section:{sectionCount}'.format_map(report))
-print('Total:{totalCount}, Success:{successCount}, Fail:{failCount},Rename skip:{renameSkip}'.format_map(report))
+if(processBreak==False):
+    print('Section:{sectionCount}'.format_map(report))
+    print('Total:{totalCount}, Success:{successCount}, Fail:{failCount},Rename:{rename},Rename skip:{renameSkip}'.format_map(report))
+else:
+    print('create failed,please check log!')
 # # http://stackoverflow.com/questions/4760215/running-shell-command-from-python-and-capturing-the-output        
 # https://docs.python.org/3/library/subprocess.html
