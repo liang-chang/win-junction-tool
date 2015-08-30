@@ -17,7 +17,8 @@ report = {
 'failCount' : 0,
 'sectionCount' : 0,
 'rename':0,
-'renameSkip':0
+'renameSkip':0,
+'skipInvalidSource':0
 }
 
 print("Create start ……")
@@ -28,7 +29,7 @@ sections = FILE_CONFIGS.sections()
 
 sectionIndex = 0;
 
-processBreak=False
+processBreak = False
 
 report['sectionCount'] = len(sections);
 
@@ -54,7 +55,7 @@ for target in sections:
         else:
             print('\nTarget dir :\n {target} \nis not directory or not exist !'.format(target=target))
             print('\nCreate terminated!')
-            processBreak=True
+            processBreak = True
             break
     print("Target:" + target)
     
@@ -72,18 +73,24 @@ for target in sections:
                 report['renameSkip'] += 1
             else:
                 os.rename(path, rename)
-                report['rename']+=1
+                report['rename'] += 1
                 # 源文件夹深度判断， 避免删除 根目录
                 if(CONFIG['clearOriginFolder'] == True and junction.getFolderDeepth(rename) >= CONFIG['minDirDeepth']):                
                     junction.clearDirectory(rename)
-        #不需要备份时，删除源文件夹
+        # 不需要备份时，删除源文件夹
         if(os.path.exists(path)):
-            result,d=junction.isJunction(path)
+            result, d = junction.isJunction(path)
             if(result == True):
                 junction.delJunction(path)
             else:
                 shutil.rmtree(path, True)
-                              
+        
+        if(CONFIG['skipNoParentSource'] == False):
+            par = os.path.abspath(os.path.join(path, os.pardir))        
+            if(os.path.exists(par) == False):
+                report['skipInvalidSource'] += 1                
+                continue
+            
         # 创建 junction 
         ret = junction.createJunction(path, target)
         if(ret == True):
@@ -94,7 +101,7 @@ for target in sections:
             print(path + " create junction failed!")
 print()
 print("Create result :")
-if(processBreak==False):
+if(processBreak == False):
     print('Section:{sectionCount}'.format_map(report))
     print('Total:{totalCount}, Success:{successCount}, Fail:{failCount},Rename:{rename},Rename skip:{renameSkip}'.format_map(report))
 else:

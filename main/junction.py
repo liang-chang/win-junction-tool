@@ -27,8 +27,11 @@ CONFIG = {
 # 清空原始文件夹,只有当  renameOriginFolder 为 True 时该配置才会生效
 'clearOriginFolder' : False,
 
-# 当目录文件夹无效时，跳过
+# 当目标文件夹无效时，跳过
 'skipInvalidTarget':False,
+
+# 是否要创建 父文件夹不存在的  源父文件夹
+'skipNoParentSource':False,
 
 # 源文件从根目录开始最小深度要求
 'minDirDeepth':2

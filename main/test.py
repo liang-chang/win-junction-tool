@@ -74,7 +74,12 @@ def delJunction(source):
     return False
     
 #print(createJunction(r"v:\tt", r"v:\temp"))
-print(delJunction(r"v:\tt"))
+#print(delJunction(r"v:\tt"))
+path=r"V:\useless_temp\G\aaaaaaa";
+print(os.pardir)
+print(os.path.join(path, os.pardir))
+print(os.path.abspath(os.path.join(path, os.pardir)))
+
 
 # print(isJunction(r"C:\useless\A"))
 # print(isFolderJunctionTo(r"v:\tt",r"v:\temp"))
