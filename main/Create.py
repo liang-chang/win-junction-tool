@@ -85,12 +85,15 @@ for target in sections:
             else:
                 shutil.rmtree(path, True)
         
-        if(CONFIG['skipNoParentSource'] == False):
-            par = os.path.abspath(os.path.join(path, os.pardir))        
-            if(os.path.exists(par) == False):
-                report['skipInvalidSource'] += 1                
+        par = os.path.abspath(os.path.join(path, os.pardir))
+        #如果源文件的父件夹不存在
+        if(os.path.exists(par)==False):
+            if(CONFIG['createSourceParent'] == False):
+                report['skipInvalidSource'] += 1
                 continue
-            
+            else:
+                os.makedirs(par, mode=0o777, exist_ok=True)
+                            
         # 创建 junction 
         ret = junction.createJunction(path, target)
         if(ret == True):
