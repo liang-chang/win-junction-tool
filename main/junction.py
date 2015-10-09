@@ -183,3 +183,6 @@ class safesub(dict):
     def __missing__(self, key):
         return '{' + key + '}'
     
+    
+print(os.path.exists("v:/ttttt"))
+print(isJunction("v:/ttttt"))
