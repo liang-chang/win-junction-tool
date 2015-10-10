@@ -182,7 +182,3 @@ class safesub(dict):
     """防止key找不到"""
     def __missing__(self, key):
         return '{' + key + '}'
-    
-    
-print(os.path.exists("v:/ttttt"))
-print(isJunction("v:/ttttt"))

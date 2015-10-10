@@ -1,7 +1,6 @@
 # coding=utf-8
 import junction
 import os
-import shutil
 
 FILE_CONFIGS = junction.loadConfig()
 # 删去 配置项  config section
@@ -19,8 +18,6 @@ report = {
 }
 
 print("Recovery start ……")
-
-print(CONFIG)
 
 sections = FILE_CONFIGS.sections()
 

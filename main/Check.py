@@ -19,8 +19,6 @@ report = {
 
 print("Check start ……")
 
-print(CONFIG)
-
 sections = FILE_CONFIGS.sections()
 
 sectionIndex = 0;

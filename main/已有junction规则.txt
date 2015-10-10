@@ -1,12 +1,26 @@
-C:\useless_temp\A,
+[C:\useless_temp\A]
+#开发环境
+C:\Users\ZL\logs
+C:\Users\ZL\diamond\logs
+C:\Users\ZL\.dubbo
 C:\Users\ZL\.WebIde70\system\log
+C:\Users\ZL\.WebStorm7\system\log
+
+[C:\useless_temp\B]
+#其他软件杂项
 C:\Users\ZL\AppData\Roaming\Adobe\Flash Player\AssetCache
 C:\Users\ZL\AppData\Roaming\BaiduYunGuanjia\logs
 C:\Users\ZL\AppData\Roaming\DiskDefrag
 C:\Users\ZL\AppData\Roaming\KuGou8\log
 C:\Users\ZL\AppData\Roaming\Macromedia\Flash Player
+C:\Users\ZL\AppData\Roaming\Unified Remote\Logs
+C:\Users\ZL\AppData\Roaming\XMusic\log
+C:\Users\ZL\AppData\Roaming\XMusic\XMusicCache
+C:\Users\ZL\AppData\Roaming\XMusicServer\XMusicServerLog
+C:\Users\ZL\AppData\Local\Youdao\YNote\log
 
-C:\useless_temp\B,
+#QQ 系
+[C:\useless_temp\C]
 C:\Users\ZL\AppData\Roaming\Tencent\Logs
 C:\Users\ZL\AppData\Roaming\Tencent\QQ\AuTemp
 C:\Users\ZL\AppData\Roaming\Tencent\QQ\Misc\com.tencent.advertisement
@@ -17,6 +31,7 @@ C:\Users\ZL\AppData\Roaming\Tencent\QQ\Misc\com.tencent.soso
 C:\Users\ZL\AppData\Roaming\Tencent\QQ\Misc\Com.Tencent.SuperQQVip
 C:\Users\ZL\AppData\Roaming\Tencent\QQ\Misc\com.tencent.today
 C:\Users\ZL\AppData\Roaming\Tencent\QQ\Misc\com.tencent.wireless
+C:\Users\ZL\AppData\Roaming\Tencent\QQ\Misc\com.tencent.weather
 C:\Users\ZL\AppData\Roaming\Tencent\QQ\Misc\LogoFile
 C:\Users\ZL\AppData\Roaming\Tencent\QQ\Skins
 C:\Users\ZL\AppData\Roaming\Tencent\QQ\STemp
@@ -24,14 +39,3 @@ C:\Users\ZL\AppData\Roaming\Tencent\QQ\temp
 C:\Users\ZL\AppData\Roaming\Tencent\QQ\webkit_cache
 C:\Users\ZL\AppData\Roaming\Tencent\QQMusic\Log\QzoneMusic
 C:\Users\ZL\AppData\Roaming\Tencent\Users\531496413\QQ\WinTemp
-
-C:\useless_temp\C,
-C:\Users\ZL\.WebStorm7\system\log
-C:\Users\ZL\AppData\Roaming\Unified Remote\Logs
-C:\Users\ZL\AppData\Roaming\XMusic\log
-C:\Users\ZL\AppData\Roaming\XMusic\XMusicCache
-C:\Users\ZL\AppData\Roaming\XMusicServer\XMusicServerLog
-
-
-C:\useless_temp\D,
-C:\Users\ZL\AppData\Local\Youdao\YNote\log

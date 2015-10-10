@@ -23,7 +23,11 @@ report = {
 
 print("Create start ……")
 
+print("config:")
 print(CONFIG)
+print()
+print("path alias:")
+print(junction.PATH_ALIAS)
 
 sections = FILE_CONFIGS.sections()
 
