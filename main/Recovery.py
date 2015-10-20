@@ -17,12 +17,12 @@ report = {
 'sectionCount' : 0,
 }
 
-print("Check start ……")
+print("Recovery start ……")
 
 sections = FILE_CONFIGS.sections()
 
 sectionIndex = 0;
-report['sectionCount']=len(sections);
+report['sectionCount'] = len(sections);
 
 for target in sections:
     print()
@@ -49,12 +49,27 @@ for target in sections:
         # 处理路径最后面出现路径分隔符的问题
         path = os.path.realpath(path)
         
-        if(junction.isFolderJunctionTo(path, target) == True):
-            report['rightCount'] += 1     
-        else:
-            report['wrongCount'] += 1
-            print('{path} wrong junction target'.format(path=path))           
+        # 如果源文件夹不存在，则跳过不处理
+        if(os.path.exists(path) == False):            
+            continue
+
+        # 如果源文件夹存在，则删除（一般时 junction ），普通文件夹则不用处理                    
+        if(os.path.exists(path) == True):
+            result, d = junction.isJunction(path)
+            if(result == True):
+                junction.delJunction(path)
+            else:
+                continue
         
+        # 如果存在备份文件夹，则恢复
+        backDirName = path + junction.CONFIG['renameFolderSubfix']
+        if(os.path.exists(backDirName)):
+            os.rename(backDirName, path)
+            continue
+        
+        # 创建源文件夹
+        os.makedirs(path, mode=0o777, exist_ok=True)
+                
 print()
 print("Check result :")
 print('Section:{sectionCount}'.format_map(report))

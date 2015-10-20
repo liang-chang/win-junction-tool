@@ -31,7 +31,7 @@ CONFIG = {
 'skipInvalidTarget':False,
 
 # 是否要创建 父文件夹不存在的  源父文件夹
-'skipNoParentSource':False,
+'createSourceParent':False,
 
 # 源文件从根目录开始最小深度要求
 'minDirDeepth':2
@@ -182,4 +182,3 @@ class safesub(dict):
     """防止key找不到"""
     def __missing__(self, key):
         return '{' + key + '}'
-    

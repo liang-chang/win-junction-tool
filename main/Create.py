@@ -18,12 +18,16 @@ report = {
 'sectionCount' : 0,
 'rename':0,
 'renameSkip':0,
-'skipInvalidSource':0
+'invalidSource':0
 }
 
 print("Create start ……")
 
+print("config:")
 print(CONFIG)
+print()
+print("path alias:")
+print(junction.PATH_ALIAS)
 
 sections = FILE_CONFIGS.sections()
 
@@ -85,12 +89,16 @@ for target in sections:
             else:
                 shutil.rmtree(path, True)
         
-        if(CONFIG['skipNoParentSource'] == False):
-            par = os.path.abspath(os.path.join(path, os.pardir))        
-            if(os.path.exists(par) == False):
-                report['skipInvalidSource'] += 1                
+        par = os.path.abspath(os.path.join(path, os.pardir))
+        # 如果源文件的父件夹不存在
+        if(os.path.exists(par) == False):
+            if(CONFIG['createSourceParent'] == False):
+                report['invalidSource'] += 1
+                print(path + " has no parent dir!")
                 continue
-            
+            else:
+                os.makedirs(par, mode=0o777, exist_ok=True)
+                            
         # 创建 junction 
         ret = junction.createJunction(path, target)
         if(ret == True):
@@ -103,7 +111,8 @@ print()
 print("Create result :")
 if(processBreak == False):
     print('Section:{sectionCount}'.format_map(report))
-    print('Total:{totalCount}, Success:{successCount}, Fail:{failCount},Rename:{rename},Rename skip:{renameSkip}'.format_map(report))
+    print('Total:{totalCount} \nSuccess:{successCount} \nFail:{failCount}'.format_map(report))
+    print('Rename:{rename} \nRename skip:{renameSkip} \nInvalidSource:{invalidSource}'.format_map(report))
 else:
     print('create failed,please check log!')
 # # http://stackoverflow.com/questions/4760215/running-shell-command-from-python-and-capturing-the-output        
